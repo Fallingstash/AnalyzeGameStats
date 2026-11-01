@@ -1,8 +1,34 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>StackLab</title></head>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>StackLab Simulator</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1e1e1e; color: white; }
+        .container { display: flex; gap: 20px; }
+        .panel { background: #2d2d2d; padding: 20px; border-radius: 8px; width: 300px; }
+        input { width: 100%; margin-bottom: 10px; padding: 5px; background: #444; color: white; border: none; }
+        button { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #45a049; }
+        #results { flex-grow: 1; background: #2d2d2d; padding: 20px; border-radius: 8px; }
+        .result-item { border-bottom: 1px solid #444; padding: 10px 0; }
+        .highlight { color: #f1c40f; font-weight: bold; }
+    </style>
+</head>
 <body>
-  <h1>StackLab</h1>
-  <script type="module" src="src/main.js"></script>
+    <h1>StackLab: Симулятор Баланса</h1>
+    <div class="container">
+        <div class="panel">
+            <h3>Параметры симуляции</h3>
+            <label>Кол-во итераций (на сборку):</label>
+            <input type="number" id="iterations" value="100" min="10" max="1000">
+            <button onclick="startAnalysis()">Запустить анализ</button>
+        </div>
+        <div id="results">
+            <h3>Результаты</h3>
+            <p>Нажми кнопку, чтобы запустить симуляцию...</p>
+        </div>
+    </div>
+    <script type="module" src="src/main.js"></script>
 </body>
 </html>

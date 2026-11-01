@@ -9,18 +9,17 @@ export class Hero {
         this.nextAttackTime = 0;
     }
 
-    attack(enemy) {
+    attack(enemy, currentTime) {
 
         if (!this.isAlive) return;
         
         if (!enemy.isAlive)  return; 
 
-        const now = Date.now(); // Получаем текущее время в миллисекундах
-        if (now < this.nextAttackTime) return;
+        if (currentTime < this.nextAttackTime) return;
 
         enemy.takeHeroAttack(this.calculateDamage());
         this.bus.emit("attackByHero", { heroId: this.id, enemyId: enemy.id });
-        this.nextAttackTime = Date.now() + (1000 / this.calculateAttackSpeed()); // Устанавливаем время следующей атаки
+        this.nextAttackTime = currentTime + (1000 / this.calculateAttackSpeed()); // Устанавливаем время следующей атаки
     }
 
     calculateDamage() {
