@@ -171,25 +171,31 @@ window.startAnalysis = function() {
     const maxTime = 20000; // millisec
     const iterationsInput = document.getElementById('iterations');
     const iterations = Number.parseInt(iterationsInput.value, 10);
-    const resultsDiv = document.getElementById('results');
-    const resultsTitle = '<header class="results-header"><h2 id="results-title">Результаты анализа</h2><p class="section-description">Винрейт сборок и среднее время симуляции.</p></header>';
+    const analysisError = document.getElementById("analysis-error");
+    const buildResults = document.getElementById("build-results");
+    const imbaNotice = document.getElementById("imba-notice");
 
     if (window.analysisChart) {
         window.analysisChart.destroy();
         window.analysisChart = null;
     }
 
+    analysisError.hidden = true;
+    analysisError.textContent = "";
+    imbaNotice.textContent = "";
+    buildResults.replaceChildren();
+
     if (!Number.isInteger(iterations) || iterations < 10 || iterations > 1000) {
-        resultsDiv.innerHTML = `${resultsTitle}<p class="error-state">Укажи от 10 до 1000 итераций на сборку.</p>`;
+        analysisError.textContent = "Укажи от 10 до 1000 итераций на сборку.";
+        analysisError.hidden = false;
         return;
     }
 
     if (typeof Chart === "undefined") {
-        resultsDiv.innerHTML = `${resultsTitle}<p class="error-state">Не удалось загрузить Chart.js. Проверь подключение к интернету и повтори попытку.</p>`;
+        analysisError.textContent = "Не удалось загрузить Chart.js. Проверь подключение к интернету и повтори попытку.";
+        analysisError.hidden = false;
         return;
     }
-
-    resultsDiv.innerHTML = `${resultsTitle}<div class="chart-card"><div class="chart-container"><canvas id="winrate-chart" role="img" aria-label="Столбчатый график винрейта сборок"></canvas></div></div><div class="notice" id="imba-notice"></div><div class="build-results" id="build-results"></div>`;
 
    const testCases = [
         // База
@@ -256,9 +262,8 @@ window.startAnalysis = function() {
         `;
     });
 
-    document.getElementById("build-results").innerHTML = htmlOutput;
+    buildResults.innerHTML = htmlOutput;
 
-    const imbaNotice = document.getElementById("imba-notice");
     if (imbaBuildNames.length > 0) {
         imbaNotice.textContent = `Обнаружена имба-сборка! ${imbaBuildNames.join(", ")}`;
     }
@@ -293,6 +298,7 @@ window.startAnalysis = function() {
                 x: {
                     ticks: {
                         color: "#aab7cc",
+                        font: { size: 10 },
                         maxRotation: 55,
                         minRotation: 25
                     },
@@ -312,4 +318,3 @@ window.startAnalysis = function() {
         }
     });
 };
-

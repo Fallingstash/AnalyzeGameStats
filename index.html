@@ -29,19 +29,19 @@
             min-width: 320px;
             min-height: 100vh;
             margin: 0;
-            padding: 48px 24px;
+            padding: 32px 24px;
             background:
                 radial-gradient(ellipse at 12% 0%, rgb(56 84 150 / 18%), transparent 36rem),
                 #0b1120;
         }
 
         .app {
-            width: min(1200px, 100%);
+            width: min(1440px, 100%);
             margin: 0 auto;
         }
 
         .page-header {
-            margin-bottom: 32px;
+            margin-bottom: 22px;
         }
 
         .eyebrow {
@@ -74,9 +74,9 @@
 
         .layout {
             display: grid;
-            grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
+            grid-template-columns: 300px minmax(0, 1fr);
             align-items: start;
-            gap: 24px;
+            gap: 18px;
         }
 
         .panel {
@@ -87,7 +87,9 @@
         }
 
         .controls {
-            padding: 24px;
+            position: sticky;
+            top: 20px;
+            padding: 20px;
         }
 
         .controls h2,
@@ -99,7 +101,7 @@
         }
 
         .section-description {
-            margin-bottom: 24px;
+            margin-bottom: 18px;
             color: var(--muted);
             font-size: 0.9rem;
             line-height: 1.5;
@@ -133,9 +135,25 @@
         }
 
         .field-hint {
-            margin: 0 0 20px;
+            margin: 0 0 14px;
             color: var(--muted);
             font-size: 0.78rem;
+        }
+
+        .control-guide {
+            margin: 18px 0 0;
+            padding: 14px 14px 0;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        .control-guide strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #cbd5e5;
+            font-size: 0.85rem;
         }
 
         button {
@@ -164,11 +182,11 @@
 
         .results {
             min-width: 0;
-            padding: 24px;
+            padding: 20px;
         }
 
         .results-header {
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         .results-header .section-description {
@@ -176,8 +194,8 @@
         }
 
         .chart-card {
-            min-height: 330px;
-            padding: 18px;
+            min-height: 300px;
+            padding: 14px;
             border: 1px solid var(--border);
             border-radius: 12px;
             background: #0c1424;
@@ -185,12 +203,12 @@
 
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 270px;
         }
 
         .notice {
-            margin: 16px 0 0;
-            padding: 13px 16px;
+            margin: 12px 0 0;
+            padding: 11px 14px;
             border: 1px solid rgb(245 190 72 / 35%);
             border-radius: 10px;
             background: rgb(245 190 72 / 10%);
@@ -205,13 +223,23 @@
 
         .build-results {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            margin-top: 20px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .build-section {
+            margin-top: 18px;
+        }
+
+        .build-section h2 {
+            margin: 0 0 12px;
+            color: #f1f5fb;
+            font-size: 1.05rem;
         }
 
         .result-item {
-            padding: 15px 16px;
+            min-width: 0;
+            padding: 13px 14px;
             border: 1px solid var(--border);
             border-radius: 10px;
             background: var(--surface-raised);
@@ -254,6 +282,16 @@
             color: #ffabb4;
         }
 
+        [hidden] {
+            display: none !important;
+        }
+
+        @media (max-width: 1100px) {
+            .build-results {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
         @media (max-width: 760px) {
             body {
                 padding: 30px 16px;
@@ -261,6 +299,14 @@
 
             .layout {
                 grid-template-columns: 1fr;
+            }
+
+            .controls {
+                position: static;
+            }
+
+            .build-results {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
@@ -270,13 +316,12 @@
                 padding: 18px;
             }
 
-            .chart-card {
-                min-height: 290px;
-                padding: 12px;
+            .chart-container {
+                height: 250px;
             }
 
-            .chart-container {
-                height: 260px;
+            .build-results {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -297,24 +342,30 @@
                 <input type="number" id="iterations" value="100" min="10" max="1000" step="1">
                 <p class="field-hint">Допустимый диапазон: от 10 до 1000.</p>
                 <button type="button" onclick="startAnalysis()">Запустить анализ</button>
+                <p class="control-guide"><strong>Что покажет анализ</strong>Винрейт на графике, среднее время и отметки для особенно сильных сборок.</p>
             </aside>
 
-            <section class="panel results" id="results" aria-labelledby="results-title" aria-live="polite">
+            <section class="panel results" id="results" aria-labelledby="results-title">
                 <header class="results-header">
                     <h2 id="results-title">Результаты анализа</h2>
-                    <p class="section-description">Винрейт сборок и среднее время симуляции.</p>
+                    <p class="section-description">Винрейт сборок. Среднее время указано в карточках ниже.</p>
                 </header>
+                <p class="error-state" id="analysis-error" role="alert" hidden></p>
                 <div class="chart-card">
                     <div class="chart-container">
                         <canvas id="winrate-chart" role="img" aria-label="Столбчатый график винрейта сборок"></canvas>
                     </div>
                 </div>
                 <div class="notice" id="imba-notice"></div>
-                <div class="build-results" id="build-results">
-                    <p class="empty-state">Нажми «Запустить анализ», чтобы сравнить сборки.</p>
-                </div>
             </section>
         </div>
+
+        <section class="build-section" aria-labelledby="build-results-title" aria-live="polite">
+            <h2 id="build-results-title">Результаты по сборкам</h2>
+            <div class="build-results" id="build-results">
+                    <p class="empty-state">Нажми «Запустить анализ», чтобы сравнить сборки.</p>
+            </div>
+        </section>
     </main>
     <script type="module" src="src/main.js"></script>
 </body>
