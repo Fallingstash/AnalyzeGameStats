@@ -61,7 +61,7 @@ function runSimulation(shardsStacks, burnStacks, poisonStaks, multiShotStacks, m
 
             const randomIndex = Math.floor(Math.random() * aliveEnemies.length);
             const currentTarget = aliveEnemies[randomIndex];
-            currentTarget.takeHeroAttack(hero.damage * 0.5);
+            currentTarget.takeHeroAttack(hero.damage * 0.4);
         }
     });
 
@@ -168,10 +168,28 @@ function runSimulation(shardsStacks, burnStacks, poisonStaks, multiShotStacks, m
 
 /// Делаем функцию глобальной, чтобы она была доступна из HTML кнопки
 window.startAnalysis = function() {
-    const maxTime = 30000; // millisec
-    const iterations = parseInt(document.getElementById('iterations').value);
+    const maxTime = 20000; // millisec
+    const iterationsInput = document.getElementById('iterations');
+    const iterations = Number.parseInt(iterationsInput.value, 10);
     const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '<p>Идет симуляция...</p>'; // Заглушка
+    const resultsTitle = '<header class="results-header"><h2 id="results-title">Результаты анализа</h2><p class="section-description">Винрейт сборок и среднее время симуляции.</p></header>';
+
+    if (window.analysisChart) {
+        window.analysisChart.destroy();
+        window.analysisChart = null;
+    }
+
+    if (!Number.isInteger(iterations) || iterations < 10 || iterations > 1000) {
+        resultsDiv.innerHTML = `${resultsTitle}<p class="error-state">Укажи от 10 до 1000 итераций на сборку.</p>`;
+        return;
+    }
+
+    if (typeof Chart === "undefined") {
+        resultsDiv.innerHTML = `${resultsTitle}<p class="error-state">Не удалось загрузить Chart.js. Проверь подключение к интернету и повтори попытку.</p>`;
+        return;
+    }
+
+    resultsDiv.innerHTML = `${resultsTitle}<div class="chart-card"><div class="chart-container"><canvas id="winrate-chart" role="img" aria-label="Столбчатый график винрейта сборок"></canvas></div></div><div class="notice" id="imba-notice"></div><div class="build-results" id="build-results"></div>`;
 
    const testCases = [
         // База
@@ -202,6 +220,10 @@ window.startAnalysis = function() {
     ];
 
     let htmlOutput = "";
+    const buildNames = [];
+    const winrates = [];
+    const barColors = [];
+    const imbaBuildNames = [];
 
     testCases.forEach(test => {
         let wins = 0;
@@ -214,23 +236,80 @@ window.startAnalysis = function() {
         }
 
         const winrate = (wins / iterations) * 100;
-        const avgTime = (totalTime / iterations).toFixed(1);
+        const avgTime = totalTime / iterations;
 
         // Формируем HTML для каждой сборки
-        const isImba = winrate > 90 && avgTime < maxTime / 1000;
+        const isImba = winrate > 90 && avgTime < maxTime / 1000 / 2; // меньше в 2 раза заданного
         const styleClass = isImba ? "highlight" : "";
+
+        buildNames.push(test.name);
+        winrates.push(Number(winrate.toFixed(1)));
+        barColors.push(isImba ? "rgba(245, 190, 72, 0.9)" : "rgba(124, 156, 255, 0.78)");
+        if (isImba) imbaBuildNames.push(test.name);
 
         htmlOutput += `
             <div class="result-item ${styleClass}">
                 <strong>${test.name}</strong><br>
-                Винрейт: ${winrate.toFixed(1)}% | Среднее время: ${avgTime} сек.
-                ${isImba ? '<br><small>⚠️ Обнаружена имба-сборка!</small>' : ''}
+                Винрейт: ${winrate.toFixed(1)}% | Среднее время: ${avgTime.toFixed(1)} сек.
+                ${isImba ? '<br><small class="highlight-label">Обнаружена имба-сборка!</small>' : ''}
             </div>
         `;
     });
 
-    resultsDiv.innerHTML = htmlOutput;
+    document.getElementById("build-results").innerHTML = htmlOutput;
+
+    const imbaNotice = document.getElementById("imba-notice");
+    if (imbaBuildNames.length > 0) {
+        imbaNotice.textContent = `Обнаружена имба-сборка! ${imbaBuildNames.join(", ")}`;
+    }
+
+    const chartContext = document.getElementById("winrate-chart").getContext("2d");
+    window.analysisChart = new Chart(chartContext, {
+        type: "bar",
+        data: {
+            labels: buildNames,
+            datasets: [{
+                label: "Винрейт",
+                data: winrates,
+                backgroundColor: barColors,
+                borderColor: barColors,
+                borderWidth: 1,
+                borderRadius: 6,
+                maxBarThickness: 42
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: context => `Винрейт: ${context.parsed.y.toFixed(1)}%`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#aab7cc",
+                        maxRotation: 55,
+                        minRotation: 25
+                    },
+                    grid: { display: false }
+                },
+                y: {
+                    min: 0,
+                    max: 100,
+                    ticks: {
+                        color: "#aab7cc",
+                        stepSize: 20,
+                        callback: value => `${value}%`
+                    },
+                    grid: { color: "rgba(145, 160, 184, 0.14)" }
+                }
+            }
+        }
+    });
 };
-
-
 
